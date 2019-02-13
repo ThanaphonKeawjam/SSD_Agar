@@ -6,8 +6,10 @@ import agarssd.model.World;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Observable;
+import java.util.Observer;
 
-public class Gui extends JFrame {
+public class Gui extends JFrame implements Observer{
 
     private World world;
     private Player myPlayer;
@@ -34,6 +36,12 @@ public class Gui extends JFrame {
         setSize(size, size);
         setResizable(false);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+    }
+
+    @Override
+    public void update(Observable observable, Object arg) {
+        if(arg instanceof World) update((World)arg);
+        else if(arg instanceof Player) registerMyPlayer((Player)arg);
     }
 
     public void registerMyPlayer(Player myPlayer) {

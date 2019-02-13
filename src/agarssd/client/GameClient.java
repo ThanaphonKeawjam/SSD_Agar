@@ -9,10 +9,11 @@ import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 
 import java.io.IOException;
+import java.util.Observable;
 
-public class GameClient {
+public class GameClient extends Observable{
 
-    // public static final String ADDRESS = "127.0.0.1"; // For testing locally
+//     public static final String ADDRESS = "127.0.0.1"; // For testing locally
     public static final String ADDRESS = "206.189.34.126"; // For testing on online server
     // public static final String ADDRESS = "192.168.xxx.xxx"; // For testing on lan network
 
@@ -22,20 +23,27 @@ public class GameClient {
     public static final int LOGIC_DELAY = 500;
 
     private Client kryoClient;
-    private Gui gui = new Gui();
     private World world;
     private Player myPlayer;
-    private GameLogic logic;
+    private LogicStrategy logic;
     private boolean running;
+
+    private static GameClient instance;
+
+    public static GameClient getInstance(){
+        if(instance == null) instance = new GameClient();
+
+        return instance;
+    }
 
     public void start() {
         initNetwork();
         initLogic();
-        gui.setVisible(true);
     }
 
     private void initLogic() {
-        logic = new GameLogic();
+//        logic = new GameLogic();
+        logic = new NewLogic();
         running = true;
         Thread logicThread = new Thread() {
             @Override
@@ -58,12 +66,6 @@ public class GameClient {
         logicThread.start();
     }
 
-    private void updateGui() {
-        if(gui != null) {
-            gui.update(world);
-        }
-    }
-
     private void initNetwork() {
         kryoClient = new Client();
         kryoClient.getKryo().register(World.class);
@@ -77,11 +79,13 @@ public class GameClient {
             public void received (Connection connection, Object object) {
                 if (object instanceof Player) {
                     myPlayer = (Player) object;
-                    gui.registerMyPlayer(myPlayer);
+                    setChanged();
+                    notifyObservers(myPlayer);
                 } else if (object instanceof World) {
                     world = (World) object;
                     refreshMyPlayer();
-                    updateGui();
+                    setChanged();
+                    notifyObservers(world);
                 }
             }
         });

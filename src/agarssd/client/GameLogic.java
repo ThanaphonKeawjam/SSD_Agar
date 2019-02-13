@@ -6,11 +6,12 @@ import agarssd.model.World;
 
 import java.util.Random;
 
-public class GameLogic {
+public class GameLogic implements LogicStrategy {
 
     private Random random = new Random();
     private long lastCommand;
 
+    @Override
     public MoveCommand getNextMoveCommand(World world, Player myPlayer) {
         if(world == null) {
             return null;
